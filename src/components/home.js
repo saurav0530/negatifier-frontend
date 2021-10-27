@@ -1,0 +1,246 @@
+import React, { Component } from 'react';
+import {Navbar,Container, Form, Row, Col, Button, Stack, Alert, Spinner} from 'react-bootstrap'
+
+let url = 'https://evening-brushlands-57776.herokuapp.com'
+
+class Home extends Component {
+    state = {
+		positive: 0,
+		negative: 0,
+		responses: null,
+		master_roll: null,
+		message: "Any alerts will appear here",
+		variant: "success",
+		isUploadDisabled: false,
+		isGCMSDisabled: true,
+		isGMSDisabled: true,
+		isDownloadMSDisabled: true,
+		isEmailDisabled: true,
+		isUploading: false,
+		isGMSUploading: false,
+		isGCMSUploading: false,
+		isMSDownloading: false,
+		isSendingEmail: false
+	}
+
+	onFileChange = (event)=>{
+		this.setState({
+			[event.target.name] : event.target.files[0]
+		})
+		console.log(event.target.files[0].type)
+	}
+	onInputChange = (event)=>{
+		this.setState({
+			[event.target.name] : event.target.value
+		})
+		console.log([event.target.name].type)
+	}
+	onClickUpload =(event)=>{
+		event.preventDefault()
+		let formData = new FormData()
+
+		this.setState({
+			isUploadDisabled: true,
+			isUploading: true,
+			message: <>Uploading <Spinner animation="border" size="sm" /></>
+		})
+
+		formData.append('positive',this.state.positive)
+		formData.append('negative',this.state.negative)
+		formData.append('master_roll',this.state.master_roll)
+		formData.append('responses',this.state.responses)
+
+		fetch(url+'/upload',{
+			method:'POST',
+			body: formData,
+			credentials: "same-origin"
+		})
+		.then(data => data.json())
+		.then(response =>{
+			this.setState({
+				message : response.message,
+				variant : response.variant,
+				isUploading: false,
+				isGMSDisabled: false
+			})
+		})
+	}
+	onClickGMS =(event)=>{
+		event.preventDefault()
+		this.setState({
+			isGMSUploading: true,
+			message: <>Generating Marksheet <Spinner animation="border" size="sm" /></>
+		})
+		fetch(url+'/generatemarksheet',{
+			method:'POST',
+			credentials: "same-origin"
+		})
+		.then(data => data.json())
+		.then(response =>{
+			this.setState({
+				message : response.message,
+				variant : response.variant,
+				isGMSUploading: false,
+				isGMSDisabled: true,
+				isDownloadMSDisabled: false,
+				isGCMSDisabled: false,
+				isEmailDisabled: false
+			})
+		})
+	}
+
+	onClickGCMS =(event)=>{
+		event.preventDefault()
+		this.setState({
+			isGCMSUploading: true,
+			message: <>Generating Concise Marksheet <Spinner animation="border" size="sm" /></>
+		})
+		fetch(url+'/generateconcisemarksheet',{
+			method:'POST',
+			credentials: "same-origin"
+		})
+		.then(data => data.json())
+		.then(response =>{
+			this.setState({
+				message : response.message,
+				variant : response.variant,
+				isGCMSUploading: false,
+				isGCMSDisabled: true,
+			})
+		})
+	}
+	
+	onClickDownload = (event)=>{
+		event.preventDefault()
+		this.setState({
+			isMSDownloading: true,
+			isDownloadMSDisabled: true,
+			message: <>Downloading Marksheet <Spinner animation="border" size="sm" /></>
+		})
+		fetch(url+'/download/marksheet')
+		.then(response => response.blob())
+		.then(blob => {
+			let url = window.URL.createObjectURL(blob);
+			let a = document.createElement('a');
+			a.href = url;
+			a.download = 'marksheet.zip';
+			a.click();
+			this.setState({
+				isMSDownloading: false,
+				isDownloadMSDisabled: false,
+				message: <>Marksheet Downloaded successfully</>
+			})
+		})
+	}
+
+	onClickSendEmail = (event)=>{
+		event.preventDefault()
+		this.setState({
+			isSendingEmail: true,
+			message: <>Sending Email <Spinner animation="border" size="sm" /></>
+		})
+		fetch(url+'/sendemail',{
+			method:'POST',
+			credentials: "same-origin"
+		})
+		.then(data => data.json())
+		.then(response =>{
+			this.setState({
+				message : 'Email sent successfully',
+				variant : 'success',
+				isEmailDisabled: true,
+				isSendingEmail: false
+			})
+		})
+	}
+
+
+	render() {
+		var uploadButton, GMSButton, sendemailButton, GCMButton, downloadMSButton
+		var uploadVariant, GMSVariant, GCMSVariant, downloadVariant, sendEmailVariant
+		var spin = <>
+			<Spinner as="span" animation="grow" size="sm" role="status" aria-hidden="true"/>
+			<Spinner as="span" animation="grow" size="sm" role="status" aria-hidden="true"/>
+			<Spinner as="span" animation="grow" size="sm" role="status" aria-hidden="true"/>
+		</>
+		
+		uploadButton= (this.state.isUploading)?spin:'Upload'
+		GMSButton = (this.state.isGMSUploading)?spin:'Generate Marksheets'
+		GCMButton = (this.state.isGCMSUploading)?spin:'Generate Concise Marksheet'
+		downloadMSButton = (this.state.isMSDownloading)?spin:'Download Marksheet'
+		sendemailButton = (this.state.isSendingEmail)?spin:'Send Email'
+
+		uploadVariant = (this.state.isUploadDisabled)?'secondary':'success'
+		GMSVariant = (this.state.isGMSDisabled)?'secondary':'success'
+		GCMSVariant = (this.state.isGCMSDisabled)?'secondary':'success'
+		downloadVariant = (this.state.isDownloadMSDisabled)?'secondary':'success'
+		sendEmailVariant = (this.state.isEmailDisabled)?'secondary':'success'
+
+        return (
+            <>
+            <Navbar bg="success" variant="dark" fixed='top'>
+                <Container className="justify-content-center"><Navbar.Brand href="#home" ><center>MARKS NEGATIFIER</center></Navbar.Brand></Container>
+            </Navbar>
+			
+            <Container style={{width:'100vw',marginTop:'15vh'}}>
+				<Alert variant={this.state.variant} style={{borderColor:'black'}}>{this.state.message}</Alert>
+                <Form style={{borderColor:'black'}}>
+				<Stack gap={2} style={{padding:'3pt 5pt'}} >
+					
+						<Form.Group as={Row} controlId="formPlaintextPassword" className="mb-3" >
+							<Form.Label column sm="3">
+								Marks for correct answer
+							</Form.Label>
+							<Col sm="9">
+								<Form.Control name='positive' size="lg" onChange={this.onInputChange} type="text" placeholder="Enter marks to be given for correct answers" />
+							</Col>
+						</Form.Group>
+			
+						<Form.Group as={Row} className="mb-3" controlId="formPlaintextPassword">
+							<Form.Label column sm="3">
+								Marks for incorrect answer
+							</Form.Label>
+							<Col sm="9">
+								<Form.Control name='negative' size="lg" onChange={this.onInputChange} type="text" placeholder="Enter marks to be deducted for incorrect answers" />
+							</Col>
+						</Form.Group>
+					
+						<Form.Group as={Row} className="mb-3" controlId="formPlaintextPassword">
+							<Form.Label column sm="3">
+								Choose file for master_roll.csv
+							</Form.Label>
+							<Col sm="9">
+								<Form.Control name='master_roll' onChange={this.onFileChange} type="file" size="lg" />
+							</Col>
+						</Form.Group>
+					
+						<Form.Group as={Row} className="mb-3" controlId="formPlaintextPassword">
+							<Form.Label column sm="3" >
+								Choose file for responses.csv
+							</Form.Label>
+							<Col sm="9">
+								<Form.Control name='responses' onChange={this.onFileChange} type="file" size="lg" />
+							</Col>
+						</Form.Group>
+						<Button variant={uploadVariant} disabled={this.state.isUploadDisabled} onClick={this.onClickUpload} type="submit" className="ms-auto" style={{width:'100%'}}>{uploadButton}</Button>
+
+						<Stack direction="horizontal" gap={3}>
+							<Button variant={GMSVariant} disabled={this.state.isGMSDisabled} onClick={this.onClickGMS} type="submit" className="ms-auto" style={{width:'25%'}}>{GMSButton}</Button>
+							<Button variant={GCMSVariant} disabled={this.state.isGCMSDisabled} onClick={this.onClickGCMS} type="submit" className="ms-auto" style={{width:'25%'}}>{GCMButton}</Button>
+							<Button variant={downloadVariant} disabled={this.state.isDownloadMSDisabled} onClick={this.onClickDownload} type="submit" className="ms-auto" style={{width:'25%'}}>{downloadMSButton}</Button>
+							<Button variant={sendEmailVariant} disabled={this.state.isEmailDisabled} onClick={this.onClickSendEmail} type="submit" className="ms-auto" style={{width:'25%'}}>{sendemailButton}</Button>
+						</Stack>
+						
+				</Stack>
+				
+			</Form>
+        	</Container>
+            
+			{/* <Alert variant={this.state.variant} style={{borderColor:'black'}} fixed="top">Made by Saurav Kumar(1901EE54)</Alert> */}
+			
+            </>
+        );
+    }
+}
+
+export default Home;
