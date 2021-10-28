@@ -11,7 +11,7 @@ class Home extends Component {
 		master_roll: null,
 		message: "Any alerts will appear here",
 		variant: "success",
-		isUploadDisabled: false,
+		isUploadDisabled: true,
 		isGCMSDisabled: true,
 		isGMSDisabled: true,
 		isDownloadMSDisabled: true,
@@ -20,20 +20,45 @@ class Home extends Component {
 		isGMSUploading: false,
 		isGCMSUploading: false,
 		isMSDownloading: false,
-		isSendingEmail: false
+		isSendingEmail: false,
+		master_style: {border:"none"},
+		responses_style: {border:"none"}
+	}
+
+	invalidFileStyle = {border:"2px solid red"}
+
+	upDateUploadButton = ()=>{
+		if(this.state.responses && this.state.master_roll && this.state.positive)
+		{
+			this.setState({
+				isUploadDisabled: false
+			})
+		}
 	}
 
 	onFileChange = (event)=>{
-		this.setState({
-			[event.target.name] : event.target.files[0]
-		})
-		console.log(event.target.files[0].type)
+		if(event.target.files[0].type==='text/csv')
+		{
+			this.setState({
+				[event.target.name] : event.target.files[0]
+			},()=>this.upDateUploadButton())
+			if(event.target.name==='master_roll')
+				this.setState({master_style: {border:"none"}})
+			else
+				this.setState({responses_style: {border:"none"}})
+		}
+		else
+		{
+			if(event.target.name==='master_roll')
+				this.setState({master_style:this.invalidFileStyle})
+			else
+				this.setState({responses_style: this.invalidFileStyle})
+		}
 	}
 	onInputChange = (event)=>{
 		this.setState({
 			[event.target.name] : event.target.value
-		})
-		console.log([event.target.name].type)
+		},()=>this.upDateUploadButton())
 	}
 	onClickUpload =(event)=>{
 		event.preventDefault()
@@ -69,6 +94,7 @@ class Home extends Component {
 		event.preventDefault()
 		this.setState({
 			isGMSUploading: true,
+			isGMSDisabled: true,
 			message: <>Generating Marksheet <Spinner animation="border" size="sm" /></>
 		})
 		fetch(url+'/generatemarksheet',{
@@ -81,7 +107,6 @@ class Home extends Component {
 				message : response.message,
 				variant : response.variant,
 				isGMSUploading: false,
-				isGMSDisabled: true,
 				isDownloadMSDisabled: false,
 				isGCMSDisabled: false,
 				isEmailDisabled: false
@@ -93,6 +118,9 @@ class Home extends Component {
 		event.preventDefault()
 		this.setState({
 			isGCMSUploading: true,
+			isGCMSDisabled:true,
+			isDownloadMSDisabled: true,
+			isEmailDisabled: true,
 			message: <>Generating Concise Marksheet <Spinner animation="border" size="sm" /></>
 		})
 		fetch(url+'/generateconcisemarksheet',{
@@ -105,7 +133,8 @@ class Home extends Component {
 				message : response.message,
 				variant : response.variant,
 				isGCMSUploading: false,
-				isGCMSDisabled: true,
+				isDownloadMSDisabled: false,
+				isEmailDisabled: false
 			})
 		})
 	}
@@ -115,6 +144,7 @@ class Home extends Component {
 		this.setState({
 			isMSDownloading: true,
 			isDownloadMSDisabled: true,
+			isEmailDisabled: true,
 			message: <>Downloading Marksheet <Spinner animation="border" size="sm" /></>
 		})
 		fetch(url+'/download/marksheet')
@@ -127,6 +157,7 @@ class Home extends Component {
 			a.click();
 			this.setState({
 				isMSDownloading: false,
+				isEmailDisabled: false,
 				isDownloadMSDisabled: false,
 				message: <>Marksheet Downloaded successfully</>
 			})
@@ -137,6 +168,7 @@ class Home extends Component {
 		event.preventDefault()
 		this.setState({
 			isSendingEmail: true,
+			isDownloadMSDisabled: true,
 			message: <>Sending Email <Spinner animation="border" size="sm" /></>
 		})
 		fetch(url+'/sendemail',{
@@ -149,6 +181,7 @@ class Home extends Component {
 				message : 'Email sent successfully',
 				variant : 'success',
 				isEmailDisabled: true,
+				isDownloadMSDisabled: false,
 				isSendingEmail: false
 			})
 		})
@@ -192,7 +225,7 @@ class Home extends Component {
 								Marks for correct answer
 							</Form.Label>
 							<Col sm="9">
-								<Form.Control name='positive' size="lg" onChange={this.onInputChange} type="text" placeholder="Enter marks to be given for correct answers" />
+								<Form.Control name='positive' onChange={this.onInputChange} type="text" placeholder="Enter marks to be given for correct answers" />
 							</Col>
 						</Form.Group>
 			
@@ -201,7 +234,7 @@ class Home extends Component {
 								Marks for incorrect answer
 							</Form.Label>
 							<Col sm="9">
-								<Form.Control name='negative' size="lg" onChange={this.onInputChange} type="text" placeholder="Enter marks to be deducted for incorrect answers" />
+								<Form.Control name='negative' onChange={this.onInputChange} type="text" placeholder="Enter marks to be deducted for incorrect answers(default is 0)" />
 							</Col>
 						</Form.Group>
 					
@@ -210,7 +243,7 @@ class Home extends Component {
 								Choose file for master_roll.csv
 							</Form.Label>
 							<Col sm="9">
-								<Form.Control name='master_roll' onChange={this.onFileChange} type="file" size="lg" />
+								<Form.Control name='master_roll' style={this.state.master_style} onChange={this.onFileChange} type="file" />
 							</Col>
 						</Form.Group>
 					
@@ -219,7 +252,7 @@ class Home extends Component {
 								Choose file for responses.csv
 							</Form.Label>
 							<Col sm="9">
-								<Form.Control name='responses' onChange={this.onFileChange} type="file" size="lg" />
+								<Form.Control name='responses' style={this.state.responses_style} onChange={this.onFileChange} type="file" />
 							</Col>
 						</Form.Group>
 						<Button variant={uploadVariant} disabled={this.state.isUploadDisabled} onClick={this.onClickUpload} type="submit" className="ms-auto" style={{width:'100%'}}>{uploadButton}</Button>
