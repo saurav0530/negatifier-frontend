@@ -21,8 +21,8 @@ class Home extends Component {
 		isGCMSUploading: false,
 		isMSDownloading: false,
 		isSendingEmail: false,
-		master_style: {border:"none"},
-		responses_style: {border:"none"}
+		master_style: {border:"1px solid #ced4da"},
+		responses_style: {border:"1px solid #ced4da"}
 	}
 
 	invalidFileStyle = {border:"2px solid red"}
@@ -37,15 +37,16 @@ class Home extends Component {
 	}
 
 	onFileChange = (event)=>{
-		if(event.target.files[0].type==='text/csv')
+		console.log(event.target.files[0])
+		if(event.target.files[0].type==='text/csv' || event.target.files[0].type==='application/vnd.ms-excel')
 		{
 			this.setState({
 				[event.target.name] : event.target.files[0]
 			},()=>this.upDateUploadButton())
 			if(event.target.name==='master_roll')
-				this.setState({master_style: {border:"none"}})
+				this.setState({master_style: {border:"1px solid #ced4da"}})
 			else
-				this.setState({responses_style: {border:"none"}})
+				this.setState({responses_style: {border:"1px solid #ced4da"}})
 		}
 		else
 		{
@@ -145,7 +146,7 @@ class Home extends Component {
 			isMSDownloading: true,
 			isDownloadMSDisabled: true,
 			isEmailDisabled: true,
-			message: <>Downloading Marksheet <Spinner animation="border" size="sm" /></>
+			message: <>Compressing Marksheet Folder <Spinner animation="border" size="sm" /></>
 		})
 		fetch(url+'/download/marksheet')
 		.then(response => response.blob())
