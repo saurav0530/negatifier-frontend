@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {Navbar,Container, Form, Row, Col, Button, Stack, Alert, Spinner} from 'react-bootstrap'
 
 let url = 'https://evening-brushlands-57776.herokuapp.com'
+// let url = 'http://localhost:4000'
 
 class Home extends Component {
     state = {
@@ -37,7 +38,8 @@ class Home extends Component {
 	}
 
 	onFileChange = (event)=>{
-		console.log(event.target.files[0])
+		if(!event.target.files.length)
+			return
 		if(event.target.files[0].type==='text/csv' || event.target.files[0].type==='application/vnd.ms-excel')
 		{
 			this.setState({
@@ -81,13 +83,28 @@ class Home extends Component {
 			body: formData,
 			credentials: "same-origin"
 		})
-		.then(data => data.json())
+		.then(data =>{
+			if(data.status!==200)
+			{
+				console.log(data.status)
+				throw new Error("Error generated")
+			}
+			return data.json()
+		})
 		.then(response =>{
 			this.setState({
 				message : response.message,
 				variant : response.variant,
 				isUploading: false,
 				isGMSDisabled: false
+			})
+		})
+		.catch(err => {
+			this.setState({
+				message : "Error while uploading",
+				variant : 'danger',
+				isUploading: false,
+				isUploadDisabled: false
 			})
 		})
 	}
@@ -102,7 +119,11 @@ class Home extends Component {
 			method:'POST',
 			credentials: "same-origin"
 		})
-		.then(data => data.json())
+		.then(data =>{
+			if(data.status!==200)
+				throw new Error()
+			return data.json()
+		})
 		.then(response =>{
 			this.setState({
 				message : response.message,
@@ -111,6 +132,14 @@ class Home extends Component {
 				isDownloadMSDisabled: false,
 				isGCMSDisabled: false,
 				isEmailDisabled: false
+			})
+		})
+		.catch(err => {
+			this.setState({
+				message : "Error while generating marksheet",
+				variant : 'danger',
+				isUploading: false,
+				isUploadDisabled: false
 			})
 		})
 	}
@@ -128,7 +157,11 @@ class Home extends Component {
 			method:'POST',
 			credentials: "same-origin"
 		})
-		.then(data => data.json())
+		.then(data =>{
+			if(data.status!==200)
+				throw new Error()
+			return data.json()
+		})
 		.then(response =>{
 			this.setState({
 				message : response.message,
@@ -136,6 +169,14 @@ class Home extends Component {
 				isGCMSUploading: false,
 				isDownloadMSDisabled: false,
 				isEmailDisabled: false
+			})
+		})
+		.catch(err => {
+			this.setState({
+				message : "Error while generating concise marksheet",
+				variant : 'danger',
+				isGCMSUploading: false,
+				isGCMSDisabled: false
 			})
 		})
 	}
@@ -149,7 +190,11 @@ class Home extends Component {
 			message: <>Compressing Marksheet Folder <Spinner animation="border" size="sm" /></>
 		})
 		fetch(url+'/download/marksheet')
-		.then(response => response.blob())
+		.then(data =>{
+			if(data.status!==200)
+				throw new Error()
+			return data.blob()
+		})
 		.then(blob => {
 			let url = window.URL.createObjectURL(blob);
 			let a = document.createElement('a');
@@ -161,6 +206,15 @@ class Home extends Component {
 				isEmailDisabled: false,
 				isDownloadMSDisabled: false,
 				message: <>Marksheet Downloaded successfully</>
+			})
+		})
+		.catch(err => {
+			this.setState({
+				message : "Error while compressing/downloading",
+				variant : 'danger',
+				isMSDownloading: false,
+				isEmailDisabled: false,
+				isDownloadMSDisabled: false,
 			})
 		})
 	}
@@ -176,12 +230,25 @@ class Home extends Component {
 			method:'POST',
 			credentials: "same-origin"
 		})
-		.then(data => data.json())
+		.then(data =>{
+			if(data.status!==200)
+				throw new Error()
+			return data.json()
+		})
 		.then(response =>{
 			this.setState({
 				message : 'Email sent successfully',
 				variant : 'success',
 				isEmailDisabled: true,
+				isDownloadMSDisabled: false,
+				isSendingEmail: false
+			})
+		})
+		.catch(err => {
+			this.setState({
+				message : "Error while sending email",
+				variant : 'danger',
+				isEmailDisabled: false,
 				isDownloadMSDisabled: false,
 				isSendingEmail: false
 			})
