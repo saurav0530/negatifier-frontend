@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import {Navbar,Container, Form, Row, Col, Button, Stack, Alert, Spinner} from 'react-bootstrap'
 
-let url = 'https://evening-brushlands-57776.herokuapp.com'
-// let url = 'http://localhost:4000'
+// let url = 'https://evening-brushlands-57776.herokuapp.com'
+let url = 'http://localhost:4000'
 
 class Home extends Component {
     state = {
@@ -120,25 +120,45 @@ class Home extends Component {
 			credentials: "same-origin"
 		})
 		.then(data =>{
-			if(data.status!==200)
+			if(data.status!==202)
 				throw new Error()
 			return data.json()
 		})
-		.then(response =>{
-			this.setState({
-				message : response.message,
-				variant : response.variant,
-				isGMSUploading: false,
-				isDownloadMSDisabled: false,
-				isGCMSDisabled: false,
-				isEmailDisabled: false
-			})
+		.then(() =>{
+			var myVar = setInterval(()=>{
+				fetch(url+'/generatemarksheet/status')
+				.then(data => data.json())
+				.then(data =>{
+					if(data.status!==202)
+					{
+						clearInterval(myVar)
+						this.setState({
+							message: data.message,
+							variant: data.variant,
+							isGMSUploading: false,
+							isGMSDisabled: !(data.status===404),
+							isUploadDisabled: !(data.status===404),
+							isEmailDisabled: (data.status===404),
+							isDownloadMSDisabled: (data.status===404),
+							isGCMSDisabled : (data.status===404)
+						})
+					}
+					else{
+						this.setState({
+							message : <>{data.message} <Spinner animation="border" size="sm" /></>,
+							variant : data.variant
+						})
+					}
+				})
+				.catch(err => console.log(err))
+			},5000)
 		})
 		.catch(err => {
 			this.setState({
 				message : "Error while generating marksheet",
 				variant : 'danger',
-				isUploading: false,
+				isGMSUploading: false,
+				isGMSDisabled: false,
 				isUploadDisabled: false
 			})
 		})
@@ -158,25 +178,45 @@ class Home extends Component {
 			credentials: "same-origin"
 		})
 		.then(data =>{
-			if(data.status!==200)
+			if(data.status!==202)
 				throw new Error()
 			return data.json()
 		})
-		.then(response =>{
-			this.setState({
-				message : response.message,
-				variant : response.variant,
-				isGCMSUploading: false,
-				isDownloadMSDisabled: false,
-				isEmailDisabled: false
-			})
+		.then(() =>{
+			var myVar = setInterval(()=>{
+				fetch(url+'/generateconcisemarksheet/status')
+				.then(data => data.json())
+				.then(data =>{
+					if(data.status!==202)
+					{
+						clearInterval(myVar)
+						this.setState({
+							message: data.message,
+							variant: data.variant,
+							isGCMSUploading: false,
+							isGCMSDisabled : !(data.status===404),
+							isDownloadMSDisabled: false,
+							isEmailDisabled: false,
+						})
+					}
+					else{
+						this.setState({
+							message : <>{data.message} <Spinner animation="border" size="sm" /></>,
+							variant : data.variant
+						})
+					}
+				})
+				.catch(err => console.log(err))
+			},5000)
 		})
 		.catch(err => {
 			this.setState({
 				message : "Error while generating concise marksheet",
 				variant : 'danger',
 				isGCMSUploading: false,
-				isGCMSDisabled: false
+				isGCMSDisabled: false,
+				isDownloadMSDisabled: false,
+				isEmailDisabled: false,
 			})
 		})
 	}
@@ -235,9 +275,9 @@ class Home extends Component {
 				throw new Error()
 			return resp.json()
 		})
-		.then((data) =>{
+		.then(() =>{
 			var myVar = setInterval(()=>{
-				fetch(url+'/status')
+				fetch(url+'/sendemail/status')
 				.then(data => data.json())
 				.then(data =>{
 					if(data.status!==202)
@@ -247,7 +287,7 @@ class Home extends Component {
 							message: data.message,
 							variant: data.variant,
 							isDownloadMSDisabled: false,
-							isGCMSDisabled: false,
+							isGCMSDisabled: true,
 							isSendingEmail: false
 						})
 					}
