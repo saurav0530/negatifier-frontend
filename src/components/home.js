@@ -219,37 +219,56 @@ class Home extends Component {
 		})
 	}
 
-	onClickSendEmail = (event)=>{
+	onClickSendEmails = (event)=>{
 		event.preventDefault()
+		console.log("Hi from send email")
 		this.setState({
 			isSendingEmail: true,
+			isEmailDisabled: true,
 			isDownloadMSDisabled: true,
+			isGCMSDisabled: true,
 			message: <>Sending Email <Spinner animation="border" size="sm" /></>
 		})
-		fetch(url+'/sendemail',{
-			method:'POST',
-			credentials: "same-origin"
-		})
-		.then(data =>{
-			if(data.status!==200)
+		fetch(url+'/sendemail')
+		.then(resp =>{
+			if(resp.status!==202)
 				throw new Error()
-			return data.json()
+			return resp.json()
 		})
-		.then(response =>{
-			this.setState({
-				message : 'Email sent successfully',
-				variant : 'success',
-				isEmailDisabled: true,
-				isDownloadMSDisabled: false,
-				isSendingEmail: false
-			})
+		.then((data) =>{
+			var myVar = setInterval(()=>{
+				fetch(url+'/status')
+				.then(data => data.json())
+				.then(data =>{
+					if(data.status!==202)
+					{
+						clearInterval(myVar)
+						this.setState({
+							message: data.message,
+							variant: data.variant,
+							isDownloadMSDisabled: false,
+							isGCMSDisabled: false,
+							isSendingEmail: false
+						})
+					}
+					else{
+						this.setState({
+							message : <>{data.message} <Spinner animation="border" size="sm" /></>,
+							variant : data.variant
+						})
+					}
+				})
+				.catch(err => console.log(err))
+			},10000)
 		})
 		.catch(err => {
+			console.log(err)
 			this.setState({
 				message : "Error while sending email",
 				variant : 'danger',
 				isEmailDisabled: false,
 				isDownloadMSDisabled: false,
+				isGCMSDisabled: false,
 				isSendingEmail: false
 			})
 		})
@@ -271,11 +290,11 @@ class Home extends Component {
 		downloadMSButton = (this.state.isMSDownloading)?spin:'Download Marksheet'
 		sendemailButton = (this.state.isSendingEmail)?spin:'Send Email'
 
-		uploadVariant = (this.state.isUploadDisabled)?'secondary':'success'
-		GMSVariant = (this.state.isGMSDisabled)?'secondary':'success'
-		GCMSVariant = (this.state.isGCMSDisabled)?'secondary':'success'
-		downloadVariant = (this.state.isDownloadMSDisabled)?'secondary':'success'
-		sendEmailVariant = (this.state.isEmailDisabled)?'secondary':'success'
+		uploadVariant = (this.state.isUploading || !this.state.isUploadDisabled)?'success':'secondary'
+		GMSVariant = (this.state.isGMSUploading || !this.state.isGMSDisabled)?'success':'secondary'
+		GCMSVariant = (this.state.isGCMSUploading || !this.state.isGCMSDisabled)?'success':'secondary'
+		downloadVariant = (this.state.isMSDownloading || !this.state.isDownloadMSDisabled)?'success':'secondary'
+		sendEmailVariant = (this.state.isSendingEmail || !this.state.isEmailDisabled)?'success':'secondary'
 
         return (
             <>
@@ -329,7 +348,7 @@ class Home extends Component {
 							<Button variant={GMSVariant} disabled={this.state.isGMSDisabled} onClick={this.onClickGMS} type="submit" className="ms-auto" style={{width:'25%'}}>{GMSButton}</Button>
 							<Button variant={GCMSVariant} disabled={this.state.isGCMSDisabled} onClick={this.onClickGCMS} type="submit" className="ms-auto" style={{width:'25%'}}>{GCMButton}</Button>
 							<Button variant={downloadVariant} disabled={this.state.isDownloadMSDisabled} onClick={this.onClickDownload} type="submit" className="ms-auto" style={{width:'25%'}}>{downloadMSButton}</Button>
-							<Button variant={sendEmailVariant} disabled={this.state.isEmailDisabled} onClick={this.onClickSendEmail} type="submit" className="ms-auto" style={{width:'25%'}}>{sendemailButton}</Button>
+							<Button variant={sendEmailVariant} disabled={this.state.isEmailDisabled} onClick={this.onClickSendEmails} type="submit" className="ms-auto" style={{width:'25%'}}>{sendemailButton}</Button>
 						</Stack>
 						
 				</Stack>
