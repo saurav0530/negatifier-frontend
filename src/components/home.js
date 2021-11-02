@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Navbar,Container, Form, Row, Col, Button, Stack, Alert, Spinner} from 'react-bootstrap'
+import {Navbar,Container, Form, Row, Col, Button, Stack, Alert, Spinner, Modal, ProgressBar} from 'react-bootstrap'
 
 let url = 'https://evening-brushlands-57776.herokuapp.com'
 // let url = 'http://localhost:4000'
@@ -12,6 +12,7 @@ class Home extends Component {
 		master_roll: null,
 		message: "Any alerts will appear here",
 		variant: "success",
+		isModalVisible: false,
 		isUploadDisabled: true,
 		isGCMSDisabled: true,
 		isGMSDisabled: true,
@@ -23,7 +24,12 @@ class Home extends Component {
 		isMSDownloading: false,
 		isSendingEmail: false,
 		master_style: {border:"1px solid #ced4da"},
-		responses_style: {border:"1px solid #ced4da"}
+		responses_style: {border:"1px solid #ced4da"},
+		subject: "Python Mark Sheet",
+		email_body: "CS384 2021 marks are attached for reference.",
+		signature: "Dr. Mayank",
+		noOfstudents: 1,
+		email_sent: 0
 	}
 
 	invalidFileStyle = {border:"2px solid red"}
@@ -35,6 +41,24 @@ class Home extends Component {
 				isUploadDisabled: false
 			})
 		}
+	}
+
+	handleClose = (event) => {
+		event.preventDefault()
+		this.setState({
+			isModalVisible : false
+		})
+	}
+	handleClose1 = () => {
+		this.setState({
+			isModalVisible : false
+		})
+	}
+	handleShow = (event) => {
+		event.preventDefault()
+		this.setState({
+			isModalVisible : true
+		})
 	}
 
 	onFileChange = (event)=>{
@@ -133,6 +157,7 @@ class Home extends Component {
 					{
 						clearInterval(myVar)
 						this.setState({
+							noOfstudents: data.data,
 							message: data.message,
 							variant: data.variant,
 							isGMSUploading: false,
@@ -261,57 +286,59 @@ class Home extends Component {
 
 	onClickSendEmails = (event)=>{
 		event.preventDefault()
-		console.log("Hi from send email")
+		console.log(this.state.subject,this.state.email_body,this.state.signature)
 		this.setState({
+			isModalVisible: false,
 			isSendingEmail: true,
 			isEmailDisabled: true,
 			isDownloadMSDisabled: true,
 			isGCMSDisabled: true,
-			message: <>Sending Email <Spinner animation="border" size="sm" /></>
+			message:<>Sending emails <Spinner animation="border" size="sm" /></>
 		})
-		fetch(url+'/sendemail')
-		.then(resp =>{
-			if(resp.status!==202)
-				throw new Error()
-			return resp.json()
-		})
-		.then(() =>{
-			var myVar = setInterval(()=>{
-				fetch(url+'/sendemail/status')
-				.then(data => data.json())
-				.then(data =>{
-					if(data.status!==202)
+		let formData = new FormData()
+
+		formData.append('subject',this.state.subject)
+		formData.append('body',this.state.email_body)
+		formData.append('signature',this.state.signature)
+
+		var index=1
+		var myVar = setInterval(()=>{
+			index += 1
+			fetch(url+'/sendemail/'+index,{
+				method:'POST',
+				body: formData,
+				credentials: "same-origin"
+			})
+			.then(resp =>{
+				if(resp.status!==200)
+					throw new Error()
+				return resp.json()
+			})
+			.then(() =>{
+				this.setState({
+					email_sent: this.state.email_sent+1,
+					message: <><ProgressBar variant="success" animated now={((this.state.email_sent*100)/this.state.noOfstudents)} label={Math.trunc(((this.state.email_sent*100)/this.state.noOfstudents))+'%'} /></>
+				},()=>{
+					if(this.state.noOfstudents === this.state.email_sent)
 					{
-						clearInterval(myVar)
 						this.setState({
-							message: data.message,
-							variant: data.variant,
-							isDownloadMSDisabled: false,
-							isGCMSDisabled: true,
-							isSendingEmail: false
-						})
-					}
-					else{
-						this.setState({
-							message : <>{data.message} <Spinner animation="border" size="sm" /></>,
-							variant : data.variant
+							message : "Email sent successfully"
 						})
 					}
 				})
-				.catch(err => console.log(err))
-			},10000)
-		})
-		.catch(err => {
-			console.log(err)
-			this.setState({
-				message : "Error while sending email",
-				variant : 'danger',
-				isEmailDisabled: false,
-				isDownloadMSDisabled: false,
-				isGCMSDisabled: false,
-				isSendingEmail: false
 			})
-		})
+			.catch(err => console.log(err))
+			if(index===this.state.noOfstudents+1)
+			{
+				clearInterval(myVar)
+				this.setState({
+					message: "Email sent successfully",
+					variant: "success",
+					isSendingEmail: false,
+					isEmailDisabled: true
+				})
+			}
+		},1000)
 	}
 
 
@@ -342,6 +369,34 @@ class Home extends Component {
                 <Container className="justify-content-center"><Navbar.Brand href="#home" ><center>MARKS NEGATIFIER</center></Navbar.Brand></Container>
             </Navbar>
 			
+			<Modal show={this.state.isModalVisible} onHide={this.handleClose1} size="lg" aria-labelledby="contained-modal-title-vcenter" centered>
+				<Modal.Header closeButton>
+					<Modal.Title id="contained-modal-title-vcenter">
+						Send Email
+					</Modal.Title>
+				</Modal.Header>
+				<Modal.Body>
+					<Form>
+						<Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+							<Form.Label>Subject</Form.Label>
+							<Form.Control placeholder={this.state.subject} onChange={this.onInputChange} name="subject" type="text" />
+						</Form.Group>
+						<Form.Group className="mb-3" controlId="exampleForm.ControlTextarea1">
+							<Form.Label>Email Body</Form.Label>
+							<Form.Control placeholder={this.state.email_body} onChange={this.onInputChange} name="email_body" as="textarea" rows={3} />
+						</Form.Group>
+						<Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+							<Form.Label>Salutation</Form.Label>
+							<Form.Control placeholder={this.state.signature} onChange={this.onInputChange} name="signature" as="textarea" rows={3} />
+						</Form.Group>
+					</Form>
+				</Modal.Body>
+				<Modal.Footer>
+					{/* <Button variant="secondary" onClick={this.handleClose}>Close</Button> */}
+					<Button variant="success" onClick={this.onClickSendEmails}>Send Email</Button>
+				</Modal.Footer>
+			</Modal>
+
             <Container style={{width:'100vw',marginTop:'15vh'}}>
 				<Alert variant={this.state.variant} style={{borderColor:'black'}}>{this.state.message}</Alert>
                 <Form style={{borderColor:'black'}}>
@@ -353,7 +408,7 @@ class Home extends Component {
 							</Form.Label>
 							<Col sm="9">
 								<Form.Control name='positive' onChange={this.onInputChange} type="text" placeholder="Enter marks to be given for correct answers" />
-							</Col>
+								</Col>
 						</Form.Group>
 			
 						<Form.Group as={Row} className="mb-3" controlId="formPlaintextPassword">
@@ -388,7 +443,8 @@ class Home extends Component {
 							<Button variant={GMSVariant} disabled={this.state.isGMSDisabled} onClick={this.onClickGMS} type="submit" className="ms-auto" style={{width:'25%'}}>{GMSButton}</Button>
 							<Button variant={GCMSVariant} disabled={this.state.isGCMSDisabled} onClick={this.onClickGCMS} type="submit" className="ms-auto" style={{width:'25%'}}>{GCMButton}</Button>
 							<Button variant={downloadVariant} disabled={this.state.isDownloadMSDisabled} onClick={this.onClickDownload} type="submit" className="ms-auto" style={{width:'25%'}}>{downloadMSButton}</Button>
-							<Button variant={sendEmailVariant} disabled={this.state.isEmailDisabled} onClick={this.onClickSendEmails} type="submit" className="ms-auto" style={{width:'25%'}}>{sendemailButton}</Button>
+							{/* <Button variant={sendEmailVariant} disabled={this.state.isEmailDisabled} onClick={this.onClickSendEmails} type="submit" className="ms-auto" style={{width:'25%'}}>{sendemailButton}</Button> */}
+							<Button variant={sendEmailVariant} disabled={this.state.isEmailDisabled} onClick={this.handleShow} type="submit" className="ms-auto" style={{width:'25%'}}>{sendemailButton}</Button>
 						</Stack>
 						
 				</Stack>
