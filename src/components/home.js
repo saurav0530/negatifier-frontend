@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Navbar,Container, Form, Row, Col, Button, Stack, Alert, Spinner, Modal, ProgressBar} from 'react-bootstrap'
+import {Container, Form, Row, Col, Button, Stack, Alert, Spinner, Modal, ProgressBar} from 'react-bootstrap'
 
 let url = 'https://evening-brushlands-57776.herokuapp.com'
 // let url = 'http://localhost:4000'
@@ -364,11 +364,7 @@ class Home extends Component {
 		sendEmailVariant = (this.state.isSendingEmail || !this.state.isEmailDisabled)?'success':'secondary'
 
         return (
-            <>
-            <Navbar bg="success" variant="dark" fixed='top'>
-                <Container className="justify-content-center"><Navbar.Brand href="#home" ><center>MARKS NEGATIFIER</center></Navbar.Brand></Container>
-            </Navbar>
-			
+            <>			
 			<Modal show={this.state.isModalVisible} onHide={this.handleClose1} size="lg" aria-labelledby="contained-modal-title-vcenter" centered>
 				<Modal.Header closeButton>
 					<Modal.Title id="contained-modal-title-vcenter">
@@ -397,7 +393,7 @@ class Home extends Component {
 				</Modal.Footer>
 			</Modal>
 
-            <Container style={{width:'100vw',marginTop:'15vh'}}>
+            <Container >
 				<Alert variant={this.state.variant} style={{borderColor:'black'}}>{this.state.message}</Alert>
                 <Form style={{borderColor:'black'}}>
 				<Stack gap={2} style={{padding:'3pt 5pt'}} >
