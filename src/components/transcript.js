@@ -210,8 +210,8 @@ class Transcript extends Component {
 									this.setState({
 										message: "Transcripts generated successfully",
 										variant: "success",
-										successful: <Badge bg="success">All generated successfully</Badge>,
-										unsuccessful: <Badge bg="danger">No errors found</Badge>,
+										successful: <Button variant="success">All generated successfully</Button>,
+										unsuccessful: <Button variant="danger">No errors found</Button>,
 										isUploading: false,
 										isShowReportDisabled: false,
 										isDownloadDisabled: false,
@@ -354,7 +354,7 @@ class Transcript extends Component {
 						.then(data=>{
 							if(data.status==='0')
 								this.setState({
-									unsuccessful: [...this.state.unsuccessful,<><Badge bg="danger">{data.roll}</Badge>{' '}</>]
+									unsuccessful: [...this.state.unsuccessful,<><Button variant="danger">{data.roll}</Button>{' '}</>]
 								},()=>{
 									if(this.state.successful.length+this.state.unsuccessful.length===diff){
 										this.setState({
@@ -369,7 +369,7 @@ class Transcript extends Component {
 								})
 							else
 								this.setState({
-									successful: [...this.state.successful,<><Badge bg="success">{data.roll}</Badge>{' '}</>]
+									successful: [...this.state.successful,<><Button variant="success">{data.roll}</Button>{' '}</>]
 								},()=>{
 									if(this.state.successful.length+this.state.unsuccessful.length===diff){
 										this.setState({
