@@ -403,7 +403,9 @@ class Transcript extends Component {
 			console.log(err)
 			this.setState({
 				message: "Error while downloading/compressing...",
-				variant: "danger"
+				variant: "danger",
+				isDownloading: false,
+				isInputDisabled: false
 			})
 		})
 	}
