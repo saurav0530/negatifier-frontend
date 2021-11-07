@@ -130,6 +130,26 @@ class Transcript extends Component {
 
 		if(this.state.requestType==="1")
 		{
+			if(this.state.signature_check && !this.state.signature)
+			{
+				this.setState({
+					message: "Please select signature file or unmark corresponding checkbox.",
+					variant: "danger",
+					isUploading: false,
+					isUploadDisabled: false
+				})
+				return
+			}
+			if(this.state.stamp_check && !this.state.stamp)
+			{
+				this.setState({
+					message: "Please select IITP Stamp file or unmark corresponding checkbox.",
+					variant: "danger",
+					isUploading: false,
+					isUploadDisabled: false
+				})
+				return
+			}
 			var formdata = new FormData()
 			formdata.append('grades',this.state.grades)
 			formdata.append('subject_master',this.state.subject_master)
