@@ -354,7 +354,7 @@ class Transcript extends Component {
 						.then(data=>{
 							if(data.status==='0')
 								this.setState({
-									unsuccessful: [...this.state.unsuccessful,<><Button variant="danger">{data.roll}</Button>{' '}</>]
+									unsuccessful: [...this.state.unsuccessful,<><Button variant="danger" className="mb-1">{data.roll}</Button>{' '}</>]
 								},()=>{
 									if(this.state.successful.length+this.state.unsuccessful.length===diff){
 										this.setState({
@@ -369,7 +369,7 @@ class Transcript extends Component {
 								})
 							else
 								this.setState({
-									successful: [...this.state.successful,<><Button variant="success">{data.roll}</Button>{' '}</>]
+									successful: [...this.state.successful,<><Button variant="success" className="mb-1">{data.roll}</Button>{' '}</>]
 								},()=>{
 									if(this.state.successful.length+this.state.unsuccessful.length===diff){
 										this.setState({
