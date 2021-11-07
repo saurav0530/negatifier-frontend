@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Container, Form, Col, Button, Stack, Alert, Spinner,Accordion,Modal, Badge,InputGroup,FormControl} from 'react-bootstrap'
+import {Container, Form, Col, Button, Stack, Alert, Spinner,Accordion,Modal,InputGroup,FormControl} from 'react-bootstrap'
 
 // const url = 'http://localhost:4000'
 const url = 'https://transcriptiitp.herokuapp.com'
