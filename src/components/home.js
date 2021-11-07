@@ -38,7 +38,11 @@ class Home extends Component {
 		if(this.state.responses && this.state.master_roll && this.state.positive)
 		{
 			this.setState({
-				isUploadDisabled: false
+				isUploadDisabled: false,
+				isGMSDisabled: true,
+				isGCMSDisabled: true,
+				isDownloadMSDisabled: true,
+				isEmailDisabled: true
 			})
 		}
 	}
@@ -120,7 +124,8 @@ class Home extends Component {
 				message : response.message,
 				variant : response.variant,
 				isUploading: false,
-				isGMSDisabled: false
+				isGMSDisabled: false,
+				isGCMSDisabled: false
 			})
 		})
 		.catch(err => {
@@ -156,17 +161,33 @@ class Home extends Component {
 					if(data.status!==202)
 					{
 						clearInterval(myVar)
-						this.setState({
-							noOfstudents: data.data,
-							message: data.message,
-							variant: data.variant,
-							isGMSUploading: false,
-							isGMSDisabled: !(data.status===404),
-							isUploadDisabled: !(data.status===404),
-							isEmailDisabled: (data.status===404),
-							isDownloadMSDisabled: (data.status===404),
-							isGCMSDisabled : (data.status===404)
-						})
+						console.log(data)
+						if(data.data===0)
+						{
+							this.setState({
+								message: "No roll number with ANSWER is present, Cannot Process!",
+								variant: "danger",
+								isUploading: false,
+								isUploadDisabled: false,
+								isGMSDisabled: true,
+								isGCMSDisabled: true,
+								isDownloadMSDisabled: true,
+								isEmailDisabled: true,
+								isGMSUploading: false
+							})
+						}
+						else
+							this.setState({
+								noOfstudents: data.data,
+								message: data.message,
+								variant: data.variant,
+								isGMSUploading: false,
+								isGMSDisabled: !(data.status===404),
+								isUploadDisabled: !(data.status===404),
+								isEmailDisabled: (data.status===404),
+								isDownloadMSDisabled: (data.status===404),
+								isGCMSDisabled : (data.status===404)
+							})
 					}
 					else{
 						this.setState({
