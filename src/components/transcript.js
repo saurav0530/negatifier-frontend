@@ -32,13 +32,13 @@ class Transcript extends Component {
 	onCheckChange = (event)=>{
 		if(event.target.name==="signature_check")
 			this.setState({
-				isSignatureDisabled: this.state.signature_check,
-				[event.target.name] : !this.state.signature_check
+				[event.target.name] : !this.state.signature_check,
+				isSignatureDisabled: this.state.signature_check
 			})
 		else
 			this.setState({
-				isStampDisabled: this.state.stamp_check,
-				[event.target.name] : !this.state.stamp_check
+				[event.target.name] : !this.state.stamp_check,
+				isStampDisabled: this.state.stamp_check
 			})
 	}
 	onInputChange = (event)=>{
@@ -66,21 +66,6 @@ class Transcript extends Component {
 			return
 		this.setState({
 			[event.target.name] : event.target.files[0]
-		},()=>{
-			if(this.state.grades && this.state.name_roll && this.state.subject_master && this.state.startRoll && this.state.endRoll)
-				this.setState({
-					isUploadDisabled: false,
-					isDownloadDisabled: true,
-					isUploading: false,
-					isDownloading: false,
-				})
-			else
-			this.setState({
-				isUploadDisabled: true,
-				isDownloadDisabled: true,
-				isUploading: false,
-				isDownloading: false,
-			})
 		})
 	}
 	onFileChange = (event)=>{
@@ -156,6 +141,26 @@ class Transcript extends Component {
 					})
 					return
 				}
+				if(this.state.signature_check && !this.state.signature)
+				{
+					this.setState({
+						message: "Please select signature file or unmark corresponding checkbox.",
+						variant: "danger",
+						isUploading: false,
+						isUploadDisabled: false
+					})
+					return
+				}
+				if(this.state.stamp_check && !this.state.stamp)
+				{
+					this.setState({
+						message: "Please select IITP Stamp file or unmark corresponding checkbox.",
+						variant: "danger",
+						isUploading: false,
+						isUploadDisabled: false
+					})
+					return
+				}
 				var formdata = new FormData()
 				formdata.append('roll',this.state.individualRoll)
 				formdata.append('grades',this.state.grades)
@@ -164,9 +169,15 @@ class Transcript extends Component {
 				formdata.append('isSignature',this.state.signature_check)
 				formdata.append('isStamp',this.state.stamp_check)
 				if(this.state.signature_check)
+				{
 					formdata.append('signature',this.state.signature)
+					console.log(this.state.signature)
+				}
 				if(this.state.stamp_check)
+				{	
 					formdata.append('stamp',this.state.stamp)
+					console.log(this.state.stamp)
+				}
 
 				fetch(url+'/uploadFiles',{
 					method:'POST',
@@ -177,7 +188,7 @@ class Transcript extends Component {
 					if(data.status === 200)
 					{
 						this.setState({
-							message: "Files uploaded successfully",
+							message: <>Files uploaded successfully... Processing transcripts <Spinner animation="border" size="sm" /></>,
 							variant: "success",
 							successful: [],
 							unsuccessful: []
@@ -229,7 +240,7 @@ class Transcript extends Component {
 								},()=>{
 									if(this.state.successful.length+this.state.unsuccessful.length===diff){
 										this.setState({
-											message:"Successful: "+this.state.successful.length+" <=====> Unsuccessful: "+this.state.unsuccessful.length,
+											message:"Transcripts generated successfully",
 											variant: "success",
 											isDownloadDisabled: false,
 											isUploading: false,
