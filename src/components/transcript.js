@@ -171,17 +171,38 @@ class Transcript extends Component {
 					method: "POST",
 					body: formdata2
 				})
-				.then(()=>{
-					this.setState({
-						message: "Transcripts generated successfully",
-						variant: "success",
-						successful: <Badge bg="success">All generated successfully</Badge>,
-						unsuccessful: <Badge bg="danger">No errors found</Badge>,
-						isUploading: false,
-						isShowReportDisabled: false,
-						isDownloadDisabled: false,
-						isModalVisible: true
-					})
+				.then((data1)=>{
+					if(data1.status===202)
+					{
+						var myVar = setInterval(()=>{
+							fetch(url+'/transcript/entireRange/status')
+							.then(data=>{
+								if(data.status===202)
+								{
+									this.setState({
+										message: <>Generating transcripts <Spinner animation="border" size="sm" /></>,
+										variant: "success"
+									})
+								}
+								if(data.status===200)
+								{
+									clearInterval(myVar)
+									this.setState({
+										message: "Transcripts generated successfully",
+										variant: "success",
+										successful: <Badge bg="success">All generated successfully</Badge>,
+										unsuccessful: <Badge bg="danger">No errors found</Badge>,
+										isUploading: false,
+										isShowReportDisabled: false,
+										isDownloadDisabled: false,
+										isModalVisible: true
+									})
+								}
+							})
+							.catch(err=>console.log(err))
+						},2000)
+						
+					}
 				})
 				.catch(err=>{
 					this.setState({
