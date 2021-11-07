@@ -161,7 +161,6 @@ class Home extends Component {
 					if(data.status!==202)
 					{
 						clearInterval(myVar)
-						console.log(data)
 						if(data.data===0)
 						{
 							this.setState({
@@ -236,14 +235,29 @@ class Home extends Component {
 					if(data.status!==202)
 					{
 						clearInterval(myVar)
-						this.setState({
-							message: data.message,
-							variant: data.variant,
-							isGCMSUploading: false,
-							isGCMSDisabled : !(data.status===404),
-							isDownloadMSDisabled: false,
-							isEmailDisabled: false,
-						})
+						console.log(data.data)
+						if(data.data===0)
+						{
+							this.setState({
+								message: "No roll number with ANSWER is present, Cannot Process!",
+								variant: "danger",
+								isUploadDisabled: false,
+								isGCMSDisabled: true,
+								isGMSDisabled: true,
+								isDownloadMSDisabled: true,
+								isEmailDisabled: true,
+								isGCMSUploading: false
+							})
+						}
+						else
+							this.setState({
+								message: data.message,
+								variant: data.variant,
+								isGCMSUploading: false,
+								isGCMSDisabled : !(data.status===404),
+								isDownloadMSDisabled: false,
+								isEmailDisabled: false,
+							})
 					}
 					else{
 						this.setState({
