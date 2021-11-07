@@ -20,7 +20,7 @@ function App() {
 					<Container className="justify-content-center"><Navbar.Brand href="#home" ><center>PROJECTS_1901EE54</center></Navbar.Brand></Container>
 				</Navbar>
 				<Container style={{width:'100vw',marginTop:'70pt'}}>
-					<Tabs defaultActiveKey="profile" id="uncontrolled-tab-example" className="mb-3">
+					<Tabs defaultActiveKey="home" id="uncontrolled-tab-example" className="mb-3">
 						<Tab eventKey="home" title="Negatifier" >
 							<Home></Home>
 						</Tab>

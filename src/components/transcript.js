@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
-import {Container, Form, Row, Col, Button, Stack, Alert, Spinner,Accordion,Modal, Badge,InputGroup,FormControl} from 'react-bootstrap'
+import {Container, Form, Col, Button, Stack, Alert, Spinner,Accordion,Modal, Badge,InputGroup,FormControl} from 'react-bootstrap'
 
 // const url = 'http://localhost:4000'
 const url = 'https://transcriptiitp.herokuapp.com'
 
 class Transcript extends Component {
 	state = {
-		message: "Any alerts appear here",
+		message: "Any alerts will appear here",
 		variant: "success",
 		israngeHTMLSelected: false,
 		startRoll: "",
@@ -27,7 +27,9 @@ class Transcript extends Component {
 		signature_check: false,
 		stamp_check: false,
 		signature: undefined,
-		stamp: undefined
+		stamp: undefined,
+		isInputDisabled: true,
+		requestType: "1"
 	}
 	onCheckChange = (event)=>{
 		if(event.target.name==="signature_check")
@@ -45,7 +47,15 @@ class Transcript extends Component {
 		this.setState({
 			[event.target.name] : event.target.value.toUpperCase()
 		},()=>{
-			if(this.state.grades && this.state.name_roll && this.state.subject_master && this.state.startRoll && this.state.endRoll)
+			if(this.state.requestType==="2")
+				this.setState({
+					isInputDisabled: false
+				})
+			else if(this.state.requestType==="1")
+				this.setState({
+					isInputDisabled: true
+				})
+			if(this.state.grades && this.state.name_roll && this.state.subject_master && (this.state.requestType==="1" || (this.state.requestType==="2" && this.state.startRoll && this.state.endRoll)))
 				this.setState({
 					isUploadDisabled: false,
 					isUploading: false,
@@ -76,7 +86,7 @@ class Transcript extends Component {
 			this.setState({
 				[event.target.name] : event.target.files[0]
 			},()=>{
-				if(this.state.grades && this.state.name_roll && this.state.subject_master && this.state.startRoll && this.state.endRoll)
+				if(this.state.grades && this.state.name_roll && this.state.subject_master && (this.state.requestType==="1" || (this.state.requestType==="2" && this.state.startRoll && this.state.endRoll)))
 					this.setState({
 						isUploadDisabled: false,
 						isDownloadDisabled: true,
@@ -105,6 +115,7 @@ class Transcript extends Component {
 		}
 	}
 	onUpload=(event)=>{
+		event.preventDefault()
 		var formdata1 = new FormData()
 		formdata1.append('startRoll',this.state.startRoll)
 		formdata1.append('endRoll',this.state.endRoll)
@@ -115,7 +126,83 @@ class Transcript extends Component {
 			message : <>Validating inputs <Spinner animation="border" size="sm" /></>,
 			variant: "success"
 		})
-		event.preventDefault()
+		
+
+		if(this.state.requestType==="1")
+		{
+			var formdata = new FormData()
+			formdata.append('grades',this.state.grades)
+			formdata.append('subject_master',this.state.subject_master)
+			formdata.append('names_roll',this.state.name_roll)
+			formdata.append('isSignature',this.state.signature_check)
+			formdata.append('isStamp',this.state.stamp_check)
+			if(this.state.signature_check)
+			{
+				formdata.append('signature',this.state.signature)
+			}
+			if(this.state.stamp_check)
+			{	
+				formdata.append('stamp',this.state.stamp)
+			}
+
+			fetch(url+'/uploadFiles',{
+				method:'POST',
+				body: formdata
+			})
+			.then(data => {
+				if(data.status === 200)
+				{
+					this.setState({
+						message: <>Files uploaded successfully... Processing transcripts <Spinner animation="border" size="sm" /></>,
+						variant: "success",
+						successful: [],
+						unsuccessful: []
+					})
+					return 
+				}
+				else
+					throw Error()
+			})
+			.then(()=>{
+				var formdata2 = new FormData()
+				formdata2.append('sign',this.state.signature_check)
+				formdata2.append('stamp',this.state.stamp_check)
+				fetch(url+'/transcript/entireRange',{
+					method: "POST",
+					body: formdata2
+				})
+				.then(()=>{
+					this.setState({
+						message: "Transcripts generated successfully",
+						variant: "success",
+						successful: <Badge bg="success">All generated successfully</Badge>,
+						unsuccessful: <Badge bg="danger">No errors found</Badge>,
+						isUploading: false,
+						isShowReportDisabled: false,
+						isDownloadDisabled: false,
+						isModalVisible: true
+					})
+				})
+				.catch(err=>{
+					this.setState({
+						message: "Error while connecting to server",
+						variant: "danger",
+						isUploading: false,
+						isUploadDisabled: false
+					})
+				})
+			})
+			.catch(err=>{
+				this.setState({
+					message: "Error while uploading files",
+					variant: "danger",
+					isUploadDisabled: false,
+					isUploading: false
+				})
+			})	
+			return
+		}
+
 		fetch(url+'/check-roll',{
 			method:"POST",
 			body:formdata1
@@ -211,6 +298,7 @@ class Transcript extends Component {
 					var formdata2 = new FormData()
 					formdata2.append('sign',this.state.signature_check)
 					formdata2.append('stamp',this.state.stamp_check)
+
 					for(start; start<=end; start++)
 					{
 						var reqRoll = String(start)
@@ -225,7 +313,7 @@ class Transcript extends Component {
 						.then(data=>{
 							if(data.status==='0')
 								this.setState({
-									unsuccessful: [...this.state.unsuccessful,<><Badge bg="success">{data.roll}</Badge>{' '}</>]
+									unsuccessful: [...this.state.unsuccessful,<><Badge bg="danger">{data.roll}</Badge>{' '}</>]
 								},()=>{
 									if(this.state.successful.length+this.state.unsuccessful.length===diff){
 										this.setState({
@@ -240,7 +328,7 @@ class Transcript extends Component {
 								})
 							else
 								this.setState({
-									successful: [...this.state.successful,<><Badge bg="danger">{data.roll}</Badge>{' '}</>]
+									successful: [...this.state.successful,<><Badge bg="success">{data.roll}</Badge>{' '}</>]
 								},()=>{
 									if(this.state.successful.length+this.state.unsuccessful.length===diff){
 										this.setState({
@@ -337,19 +425,6 @@ class Transcript extends Component {
 		})
 	}
     render() {
-		var rangeHTML = <>
-		<Form.Group as={Row} className="mb-0" controlId="formPlaintextPassword">
-			<Form.Label column sm="3">
-				Roll Range
-			</Form.Label>
-			<Col sm="9">
-				<Stack direction='horizontal' gap={1}>
-					<Form.Control name='startRoll' value={this.state.startRoll} onChange={this.onInputChange} type="text" placeholder="Start roll" />
-					<Form.Control name='endRoll' value={this.state.endRoll} onChange={this.onInputChange} type="text" placeholder="End roll" />
-				</Stack>
-			</Col>
-		</Form.Group>
-		</>
 		var loading = <>
 			<Spinner as="span" animation="grow" size="sm" role="status" aria-hidden="true"/>
 			<Spinner as="span" animation="grow" size="sm" role="status" aria-hidden="true"/>
@@ -388,62 +463,83 @@ class Transcript extends Component {
 						<Form style={{borderColor:'black'}}>
 						
 						<Stack gap={2} style={{padding:'3pt 5pt'}} >
-							{rangeHTML}
+							<InputGroup className="mb-0">
+								<Col sm="3">
+									<Form.Select name="requestType" style={{backgroundColor:"skyblue",color:"black"}} onChange={this.onInputChange}>
+										<option value="1">Entire Range</option>
+										<option value="2">Roll range</option>
+									</Form.Select>
+								</Col>
+								<Col sm="9">
+								<Stack direction='horizontal' gap={0}>
+									<Form.Control disabled={this.state.isInputDisabled} name='startRoll' value={this.state.startRoll} onChange={this.onInputChange} type="text" placeholder="Start roll" />
+									<Form.Control disabled={this.state.isInputDisabled} name='endRoll' value={this.state.endRoll} onChange={this.onInputChange} type="text" placeholder="End roll" />
+								</Stack>
+								</Col>
+							</InputGroup>
 							
-							<Form.Group as={Row} className="mb-0" controlId="formPlaintextPassword">
-								<Form.Label column sm="3">
-									Choose file for grades.csv
-								</Form.Label>
+							<InputGroup className="mb-0">
+								<Col sm="3">
+									<InputGroup.Text style={{backgroundColor:"#c5c7c1"}} id="basic-addon1">Choose file for grades.csv</InputGroup.Text>
+								</Col>
 								<Col sm="9">
+								<Stack direction='horizontal' gap={0}>
 									<Form.Control name='grades' onChange={this.onFileChange} type="file" />
-									{/* <Form.Text className="text-muted">
-										Image size should be 100pt x 30pt.
-									</Form.Text> */}
+								</Stack>
 								</Col>
-							</Form.Group>
-						
-							<Form.Group as={Row} className="mb-0" controlId="formPlaintextPassword">
-								<Form.Label column sm="3" >
-									Choose file for name_roll.csv
-								</Form.Label>
+							</InputGroup>
+
+							<InputGroup className="mb-0">
+								<Col sm="3">
+									<InputGroup.Text style={{backgroundColor:"#c5c7c1"}} id="basic-addon1">Choose file for name_roll.csv</InputGroup.Text>
+								</Col>
 								<Col sm="9">
+								<Stack direction='horizontal' gap={0}>
 									<Form.Control name='name_roll' onChange={this.onFileChange} type="file" />
+								</Stack>
 								</Col>
-							</Form.Group>
-							<Form.Group as={Row} className="mb-0" controlId="formPlaintextPassword">
-								<Form.Label column sm="3" >
-									Choose file for subject_master.csv
-								</Form.Label>
+							</InputGroup>
+						
+							<InputGroup className="mb-0">
+								<Col sm="3">
+									<InputGroup.Text style={{backgroundColor:"#c5c7c1"}} id="basic-addon1">Choose file for subject_master.csv</InputGroup.Text>
+								</Col>
 								<Col sm="9">
+								<Stack direction='horizontal' gap={0}>
 									<Form.Control name='subject_master' onChange={this.onFileChange} type="file" />
+								</Stack>
 								</Col>
-							</Form.Group>
-							<Form.Group as={Row} className="mb-0" controlId="formPlaintextPassword">
-								<Form.Label column sm="3" >
-									Assistant Registrar Signature
-								</Form.Label>
+							</InputGroup>
+
+							<InputGroup className="mb-0">
+								<Col sm="3">
+									<InputGroup.Text style={{backgroundColor:"#c5c7c1"}} id="basic-addon1">Assistant Registrar Signature</InputGroup.Text>
+								</Col>
 								<Col sm="9">
 									<InputGroup className="mb-0">
-										<InputGroup.Checkbox name="signature_check" onClick={this.onCheckChange}/>
+										<InputGroup.Checkbox style={{border:"2px solid black"}} name="signature_check" onClick={this.onCheckChange}/>
 										<FormControl type='file' name="signature" onChange={this.onFileChange1} disabled={this.state.isSignatureDisabled} />
 									</InputGroup>
 								</Col>
-							</Form.Group>
-							<Form.Group as={Row} className="mb-0" controlId="formPlaintextPassword">
-								<Form.Label column sm="3" >
-									IITP Stamp
-								</Form.Label>
+							</InputGroup>
+
+							<InputGroup className="mb-0">
+								<Col sm="3">
+									<InputGroup.Text style={{backgroundColor:"#c5c7c1"}} id="basic-addon1">IITP Stamp</InputGroup.Text>
+								</Col>
 								<Col sm="9">
 									<InputGroup className="mb-3">
-										<InputGroup.Checkbox name="stamp_check" onClick={this.onCheckChange}/>
-										<FormControl type='file' name='stamp' onChange={this.onFileChange1} disabled={this.state.isStampDisabled}/>
+										<InputGroup.Checkbox style={{border:"2px solid black"}} name="stamp_check" onClick={this.onCheckChange}/>
+										<FormControl type='file' name='stamp' onChange={this.onFileChange1} disabled={this.state.isStampDisabled} />
 									</InputGroup>
 								</Col>
-							</Form.Group>
-							<Button variant="primary" disabled={this.state.isUploadDisabled} type="submit" onClick={this.onUpload} className="ms-auto" style={{width:'100%'}}>{uploadButton}</Button>
+							</InputGroup>
+
+
+							<Button variant={this.state.isUploadDisabled?'success':'primary'} disabled={this.state.isUploadDisabled} type="submit" onClick={this.onUpload} className="ms-auto" style={{width:'100%'}}>{uploadButton}</Button>
 							<Stack direction="horizontal" gap={1}>
-								<Button variant="success" disabled={this.state.isShowReportDisabled} type="submit" onClick={this.handleShow} className="ms-auto" style={{width:'100%'}}>Show Report</Button>
-								<Button variant="success" disabled={this.state.isDownloadDisabled} type="submit" onClick={this.onClickDownload} className="ms-auto" style={{width:'100%'}}>{downloadButton}</Button>
+								<Button variant={this.state.isShowReportDisabled?'success':'primary'} disabled={this.state.isShowReportDisabled} type="submit" onClick={this.handleShow} className="ms-auto" style={{width:'100%'}}>Show Report</Button>
+								<Button variant={this.state.isDownloadDisabled?'success':'primary'} disabled={this.state.isDownloadDisabled} type="submit" onClick={this.onClickDownload} className="ms-auto" style={{width:'100%'}}>{downloadButton}</Button>
 							</Stack>
 						</Stack>
 						

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Container, Form, Row, Col, Button, Stack, Alert, Spinner, Modal, ProgressBar} from 'react-bootstrap'
+import {Container, Form, Col, Button, Stack, Alert, Spinner, Modal, ProgressBar,InputGroup} from 'react-bootstrap'
 
 let url = 'https://evening-brushlands-57776.herokuapp.com'
 // let url = 'http://localhost:4000'
@@ -398,41 +398,42 @@ class Home extends Component {
                 <Form style={{borderColor:'black'}}>
 				<Stack gap={2} style={{padding:'3pt 5pt'}} >
 					
-						<Form.Group as={Row} controlId="formPlaintextPassword" className="mb-3" >
-							<Form.Label column sm="3">
-								Marks for correct answer
-							</Form.Label>
+						<InputGroup className="mb-0">
+							<Col sm="3">
+								<InputGroup.Text style={{backgroundColor:"#c5c7c1"}} id="basic-addon1">Marks for correct answer</InputGroup.Text>
+							</Col>
 							<Col sm="9">
 								<Form.Control name='positive' onChange={this.onInputChange} type="text" placeholder="Enter marks to be given for correct answers" />
-								</Col>
-						</Form.Group>
-			
-						<Form.Group as={Row} className="mb-3" controlId="formPlaintextPassword">
-							<Form.Label column sm="3">
-								Marks for incorrect answer
-							</Form.Label>
+							</Col>
+						</InputGroup>
+
+						<InputGroup className="mb-0">
+							<Col sm="3">
+								<InputGroup.Text style={{backgroundColor:"#c5c7c1"}} id="basic-addon1">Marks for incorrect answer</InputGroup.Text>
+							</Col>
 							<Col sm="9">
 								<Form.Control name='negative' onChange={this.onInputChange} type="text" placeholder="Enter marks to be deducted for incorrect answers(default is 0)" />
 							</Col>
-						</Form.Group>
-					
-						<Form.Group as={Row} className="mb-3" controlId="formPlaintextPassword">
-							<Form.Label column sm="3">
-								Choose file for master_roll.csv
-							</Form.Label>
+						</InputGroup>
+
+						<InputGroup className="mb-0">
+							<Col sm="3">
+								<InputGroup.Text style={{backgroundColor:"#c5c7c1"}} id="basic-addon1">Choose file for master_roll.csv</InputGroup.Text>
+							</Col>
 							<Col sm="9">
 								<Form.Control name='master_roll' style={this.state.master_style} onChange={this.onFileChange} type="file" />
 							</Col>
-						</Form.Group>
+						</InputGroup>
 					
-						<Form.Group as={Row} className="mb-3" controlId="formPlaintextPassword">
-							<Form.Label column sm="3" >
-								Choose file for responses.csv
-							</Form.Label>
+						<InputGroup className="mb-3">
+							<Col sm="3">
+								<InputGroup.Text style={{backgroundColor:"#c5c7c1"}} id="basic-addon1">Choose file for responses.csv</InputGroup.Text>
+							</Col>
 							<Col sm="9">
 								<Form.Control name='responses' style={this.state.responses_style} onChange={this.onFileChange} type="file" />
 							</Col>
-						</Form.Group>
+						</InputGroup>
+					
 						<Button variant={uploadVariant} disabled={this.state.isUploadDisabled} onClick={this.onClickUpload} type="submit" className="ms-auto" style={{width:'100%'}}>{uploadButton}</Button>
 
 						<Stack direction="horizontal" gap={3}>
