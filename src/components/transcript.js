@@ -111,7 +111,9 @@ class Transcript extends Component {
 		this.setState({
 			isUploadDisabled: true,
 			isUploading: true,
-			isShowReportDisabled: true
+			isShowReportDisabled: true,
+			message : <>Validating inputs <Spinner animation="border" size="sm" /></>,
+			variant: "success"
 		})
 		event.preventDefault()
 		fetch(url+'/check-roll',{
@@ -161,6 +163,10 @@ class Transcript extends Component {
 					})
 					return
 				}
+				this.setState({
+					message:<>Validation successful... Uploading data <Spinner animation="border" size="sm" /></>,
+					variant: "success"
+				})
 				var formdata = new FormData()
 				formdata.append('roll',this.state.individualRoll)
 				formdata.append('grades',this.state.grades)
@@ -171,12 +177,10 @@ class Transcript extends Component {
 				if(this.state.signature_check)
 				{
 					formdata.append('signature',this.state.signature)
-					console.log(this.state.signature)
 				}
 				if(this.state.stamp_check)
 				{	
 					formdata.append('stamp',this.state.stamp)
-					console.log(this.state.stamp)
 				}
 
 				fetch(url+'/uploadFiles',{
@@ -285,7 +289,9 @@ class Transcript extends Component {
 		event.preventDefault()
 		this.setState({
 			isDownloadDisabled: true,
-			isDownloading: true
+			isDownloading: true,
+			message: <>Processing request... <Spinner animation="border" size="sm" /></>,
+			variant: "success"
 		})
 		fetch(url+'/download')
 		.then(data =>{
@@ -300,10 +306,18 @@ class Transcript extends Component {
 			a.download = 'transcriptIITP.zip';
 			a.click();
 			this.setState({
-				isDownloading:false
+				isDownloading:false,
+				message: "Downloaded successfully...",
+				variant: "success"
 			})
 		})
-		.catch(err => {console.log(err)})
+		.catch(err => {
+			console.log(err)
+			this.setState({
+				message: "Error while downloading/compressing...",
+				variant: "danger"
+			})
+		})
 	}
 	handleClose = (event) => {
 		event.preventDefault()
