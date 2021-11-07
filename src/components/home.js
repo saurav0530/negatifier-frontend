@@ -184,8 +184,7 @@ class Home extends Component {
 								isGMSDisabled: !(data.status===404),
 								isUploadDisabled: !(data.status===404),
 								isEmailDisabled: (data.status===404),
-								isDownloadMSDisabled: (data.status===404),
-								isGCMSDisabled : (data.status===404)
+								isDownloadMSDisabled: (data.status===404)
 							})
 					}
 					else{
@@ -235,7 +234,6 @@ class Home extends Component {
 					if(data.status!==202)
 					{
 						clearInterval(myVar)
-						console.log(data.data)
 						if(data.data===0)
 						{
 							this.setState({
@@ -392,11 +390,11 @@ class Home extends Component {
 		downloadMSButton = (this.state.isMSDownloading)?spin:'Download Marksheet'
 		sendemailButton = (this.state.isSendingEmail)?spin:'Send Email'
 
-		uploadVariant = (this.state.isUploading || !this.state.isUploadDisabled)?'success':'secondary'
-		GMSVariant = (this.state.isGMSUploading || !this.state.isGMSDisabled)?'success':'secondary'
-		GCMSVariant = (this.state.isGCMSUploading || !this.state.isGCMSDisabled)?'success':'secondary'
-		downloadVariant = (this.state.isMSDownloading || !this.state.isDownloadMSDisabled)?'success':'secondary'
-		sendEmailVariant = (this.state.isSendingEmail || !this.state.isEmailDisabled)?'success':'secondary'
+		uploadVariant = !(this.state.isUploading || !this.state.isUploadDisabled)?'success':'primary'
+		GMSVariant = !(this.state.isGMSUploading || !this.state.isGMSDisabled)?'success':'primary'
+		GCMSVariant = !(this.state.isGCMSUploading || !this.state.isGCMSDisabled)?'success':'primary'
+		downloadVariant = !(this.state.isMSDownloading || !this.state.isDownloadMSDisabled)?'success':'primary'
+		sendEmailVariant = !(this.state.isSendingEmail || !this.state.isEmailDisabled)?'success':'primary'
 
         return (
             <>			
