@@ -342,11 +342,11 @@ class Transcript extends Component {
 			<Form.Label column sm="3">
 				Roll Range
 			</Form.Label>
-			<Col sm="5">
-			<Form.Control name='startRoll' value={this.state.startRoll} onChange={this.onInputChange} type="text" placeholder="Start roll" />
-			</Col>
-			<Col sm="4">
-			<Form.Control name='endRoll' value={this.state.endRoll} onChange={this.onInputChange} type="text" placeholder="End roll" />
+			<Col sm="9">
+				<Stack direction='horizontal' gap={1}>
+					<Form.Control name='startRoll' value={this.state.startRoll} onChange={this.onInputChange} type="text" placeholder="Start roll" />
+					<Form.Control name='endRoll' value={this.state.endRoll} onChange={this.onInputChange} type="text" placeholder="End roll" />
+				</Stack>
 			</Col>
 		</Form.Group>
 		</>
@@ -441,9 +441,10 @@ class Transcript extends Component {
 								</Col>
 							</Form.Group>
 							<Button variant="primary" disabled={this.state.isUploadDisabled} type="submit" onClick={this.onUpload} className="ms-auto" style={{width:'100%'}}>{uploadButton}</Button>
-							<Button variant="primary" disabled={this.state.isShowReportDisabled} type="submit" onClick={this.handleShow} className="ms-auto" style={{width:'100%'}}>Show Report</Button>
-							<Button variant="success" disabled={this.state.isDownloadDisabled} type="submit" onClick={this.onClickDownload} className="ms-auto" style={{width:'100%'}}>{downloadButton}</Button>
-
+							<Stack direction="horizontal" gap={1}>
+								<Button variant="success" disabled={this.state.isShowReportDisabled} type="submit" onClick={this.handleShow} className="ms-auto" style={{width:'100%'}}>Show Report</Button>
+								<Button variant="success" disabled={this.state.isDownloadDisabled} type="submit" onClick={this.onClickDownload} className="ms-auto" style={{width:'100%'}}>{downloadButton}</Button>
+							</Stack>
 						</Stack>
 						
 						</Form>
