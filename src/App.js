@@ -21,10 +21,10 @@ function App() {
 				</Navbar>
 				<Container style={{width:'100vw',marginTop:'70pt'}}>
 					<Tabs defaultActiveKey="home" id="uncontrolled-tab-example" className="mb-3">
-						<Tab eventKey="home" title="Negatifier" >
+						<Tab eventKey="home" title="Project-I" >
 							<Home></Home>
 						</Tab>
-						<Tab eventKey="profile" title="Transcripts">
+						<Tab eventKey="profile" title="Project-II">
 							<Transcript></Transcript>
 						</Tab>
 					</Tabs>
