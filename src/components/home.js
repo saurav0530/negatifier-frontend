@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import {Container, Form, Col, Button, Stack, Alert, Spinner, Modal, ProgressBar,InputGroup} from 'react-bootstrap'
 
-let url = 'https://evening-brushlands-57776.herokuapp.com'
-// let url = 'http://localhost:4000'
+let url = process.env.REACT_APP_BACK_URL_PROJ1
 
 class Home extends Component {
     state = {

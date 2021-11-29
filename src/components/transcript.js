@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import {Container, Form, Col, Button, Stack, Alert, Spinner,Accordion,Modal,InputGroup,FormControl} from 'react-bootstrap'
 
-// const url = 'http://localhost:5000'
-const url = 'https://transcriptiitp.herokuapp.com'
+let url = process.env.REACT_APP_BACK_URL_PROJ2
 
 class Transcript extends Component {
 	state = {
