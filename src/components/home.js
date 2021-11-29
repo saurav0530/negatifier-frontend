@@ -7,6 +7,7 @@ class Home extends Component {
     state = {
 		positive: 0,
 		negative: 0,
+		examName: "Default value: (quiz)",
 		responses: null,
 		master_roll: null,
 		message: "Any alerts will appear here",
@@ -100,8 +101,6 @@ class Home extends Component {
 			message: <>Uploading <Spinner animation="border" size="sm" /></>
 		})
 
-		formData.append('positive',this.state.positive)
-		formData.append('negative',this.state.negative)
 		formData.append('master_roll',this.state.master_roll)
 		formData.append('responses',this.state.responses)
 
@@ -143,9 +142,14 @@ class Home extends Component {
 			isGMSDisabled: true,
 			message: <>Generating Marksheet <Spinner animation="border" size="sm" /></>
 		})
+		let formData = new FormData()
+		formData.append('name',this.state.examName)
+		formData.append('positive',this.state.positive)
+		formData.append('negative',this.state.negative)
 		fetch(url+'/generatemarksheet',{
 			method:'POST',
-			credentials: "same-origin"
+			credentials: "same-origin",
+			body: formData
 		})
 		.then(data =>{
 			if(data.status!==202)
@@ -432,6 +436,15 @@ class Home extends Component {
 					
 						<InputGroup className="mb-0">
 							<Col sm="3">
+								<InputGroup.Text style={{backgroundColor:"#c5c7c1"}} id="basic-addon1">Exam Name</InputGroup.Text>
+							</Col>
+							<Col sm="9">
+								<Form.Control name='examName' onChange={this.onInputChange} type="text" placeholder={this.state.examName} />
+							</Col>
+						</InputGroup>
+
+						<InputGroup className="mb-0">
+							<Col sm="3">
 								<InputGroup.Text style={{backgroundColor:"#c5c7c1"}} id="basic-addon1">Marks for correct answer</InputGroup.Text>
 							</Col>
 							<Col sm="9">
@@ -480,9 +493,6 @@ class Home extends Component {
 				
 			</Form>
         	</Container>
-            
-			{/* <Alert variant={this.state.variant} style={{borderColor:'black'}} fixed="top">Made by Saurav Kumar(1901EE54)</Alert> */}
-			
             </>
         );
     }
