@@ -220,9 +220,13 @@ class Home extends Component {
 			isEmailDisabled: true,
 			message: <>Generating Concise Marksheet <Spinner animation="border" size="sm" /></>
 		})
+		let formData = new FormData()
+		formData.append('positive',this.state.positive)
+		formData.append('negative',this.state.negative)
 		fetch(url+'/generateconcisemarksheet',{
 			method:'POST',
-			credentials: "same-origin"
+			credentials: "same-origin",
+			body: formData
 		})
 		.then(data =>{
 			if(data.status!==202)
